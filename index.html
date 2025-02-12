@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: #333;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2575fc;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .note-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .note-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .note-card:hover {
+            transform: scale(1.05);
+        }
+
+        .note-card span {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .options-menu {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 30px;  /* Posisi menu opsi */
+            background-color: rgb(115, 111, 175);
+            border: 1px solid #2d30ff;
+            border-radius: 10px;
+            padding: 10px 0;
+            width: 120px;
+            z-index: 10;  /* Menambahkan z-index untuk memastikan menu di depan */
+        }
+
+        .options-menu button {
+            background: none;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .options-menu button:hover {
+            background-color: #ff0000;
+        }
+
+        button.options {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #007bff;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .archive-section {
+            margin-top: 40px;
+        }
+
+        .archive-section button {
+            padding: 12px 20px;
+            background-color: #ffc107;
+            color: white;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .archive-section button:hover {
+            background-color: #e0a800;
+        }
+
+        .hidden-archive {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Catatan</h1>
+        <input type="text" id="note-input" placeholder="Masukkan catatan baru">
+        <button id="add-note">Tambah Catatan</button>
+
+        <h2>Catatan Aktif</h2>
+        <div id="note-list" class="note-list">
+            <!-- Catatan akan ditambahkan di sini -->
+        </div>
+
+        <div class="archive-section">
+            <h2>Catatan Terarsip</h2>
+            <button id="toggle-archive-btn">Tampilkan Arsip</button>
+            <div id="archived-notes" class="note-list hidden-archive">
+                <!-- Catatan yang diarsipkan akan ditampilkan di sini -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk menambah catatan
+        function addNote() {
+            var noteInput = document.getElementById('note-input');
+            var noteList = document.getElementById('note-list');
+
+            if (noteInput.value.trim() !== "") {
+                var li = document.createElement('div');
+                li.classList.add('note-card');
+                var span = document.createElement('span');
+                span.textContent = noteInput.value;
+
+                var optionsButton = document.createElement('button');
+                optionsButton.textContent = '⋮';
+                optionsButton.classList.add('options');
+                optionsButton.onclick = function() {
+                    var optionsMenu = li.querySelector('.options-menu');
+                    optionsMenu.style.display = optionsMenu.style.display === 'block' ? 'none' : 'block';
+                };
+
+                var optionsMenu = document.createElement('div');
+                optionsMenu.classList.add('options-menu');
+
+                var editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.onclick = function() {
+                    var newText = prompt("Edit catatan:", span.textContent);
+                    if (newText !== null) {
+                        span.textContent = newText;
+                    }
+                    optionsMenu.style.display = 'none';
+                };
+
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Hapus';
+                deleteButton.onclick = function() {
+                    li.remove();
+                };
+
+                var archiveButton = document.createElement('button');
+                archiveButton.textContent = 'Arsip';
+                archiveButton.onclick = function() {
+                    var archivedNotes = document.getElementById('archived-notes');
+                    archivedNotes.appendChild(li);
+                    optionsMenu.style.display = 'none';
+                };
+
+                optionsMenu.appendChild(editButton);
+                optionsMenu.appendChild(deleteButton);
+                optionsMenu.appendChild(archiveButton);
+
+                li.appendChild(span);
+                li.appendChild(optionsButton);
+                li.appendChild(optionsMenu);
+
+                noteList.appendChild(li);
+                noteInput.value = ""; // Clear input
+            }
+        }
+
+        // Menangkap tombol 'Enter' untuk menambah catatan
+        document.getElementById('note-input').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                addNote(); // Panggil fungsi untuk menambah catatan
+            }
+        });
+
+        // Menambahkan event listener untuk tombol 'Tambah Catatan'
+        document.getElementById('add-note').addEventListener('click', addNote);
+
+        // Menangani toggle tampilan arsip
+        document.getElementById('toggle-archive-btn').addEventListener('click', toggleArchive);
+
+        // Fungsi untuk toggle arsip
+        function toggleArchive() {
+            var archiveSection = document.getElementById('archived-notes');
+            var toggleButton = document.getElementById('toggle-archive-btn');
+
+            if (archiveSection.classList.contains('hidden-archive')) {
+                archiveSection.classList.remove('hidden-archive');
+                toggleButton.textContent = 'Sembunyikan Arsip';
+            } else {
+                archiveSection.classList.add('hidden-archive');
+                toggleButton.textContent = 'Tampilkan Arsip';
+            }
+        }
+
+        // Menambahkan opsi Unarsip di dalam opsi menu
+        document.addEventListener('click', function(event) {
+            if (event.target && event.target.textContent === 'Unarsip') {
+                var noteToUnarchive = event.target.closest('.note-card');
+                var activeNotesList = document.getElementById('note-list');
+                activeNotesList.appendChild(noteToUnarchive);
+            }
+
+            // Menutup menu jika klik di luar
+            var optionsMenus = document.querySelectorAll('.options-menu');
+            optionsMenus.forEach(function(menu) {
+                if (!menu.contains(event.target) && !menu.previousSibling.contains(event.target)) {
+                    menu.style.display = 'none';
+                }
+            });
+        });
+
+        // Menambahkan Unarsip ke dalam menu opsi jika catatan ada di arsip
+        function addUnarchiveButton(optionsMenu) {
+            var unarchiveButton = document.createElement('button');
+            unarchiveButton.textContent = 'Unarsip';
+            unarchiveButton.onclick = function() {
+                var noteToUnarchive = optionsMenu.closest('.note-card');
+                var activeNotesList = document.getElementById('note-list');
+                activeNotesList.appendChild(noteToUnarchive);
+                optionsMenu.style.display = 'none';
+            };
+            optionsMenu.appendChild(unarchiveButton);
+        }
+    </script>
+</body>
+</html>
